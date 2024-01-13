@@ -110,23 +110,19 @@ for episode in range(num_episodes):
         next_state, reward, done = game.step(action)
         total_reward += reward
 
-        # Store the transition in memory
         replay_memory.append((state, action, reward, next_state, done))
 
-        # Move to the next state
         state = next_state
 
-        # Perform one step of the optimization
         train_model(policy_net, target_net, optimizer, replay_memory, batch_size, gamma)
 
         if done:
             break
 
-    # Update the target network
-    if episode % TARGET_UPDATE == 10:
+    # Corrected target network update condition
+    if episode % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
 
-    # Decay epsilon
     if epsilon > epsilon_min:
         epsilon *= epsilon_decay
 
