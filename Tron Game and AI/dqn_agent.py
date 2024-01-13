@@ -35,7 +35,7 @@ epsilon_min = 0.01
 epsilon_decay = 0.995
 replay_memory_size = 100000
 batch_size = 20
-TARGET_UPDATE = 10  # Update target network every 10 episodes
+target_update = 10  # Update target network every 10 episodes
 hidden_layer_size = 64  # Number of neurons in each hidden layer
 
 
@@ -120,7 +120,7 @@ for episode in range(num_episodes):
             break
 
     # Corrected target network update condition
-    if episode % TARGET_UPDATE == 0:
+    if episode % target_update == 0:
         target_net.load_state_dict(policy_net.state_dict())
 
     if epsilon > epsilon_min:
