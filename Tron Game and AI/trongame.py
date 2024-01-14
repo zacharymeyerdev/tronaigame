@@ -71,7 +71,9 @@ class TronGame:
                     self.is_collision(self.ai2_avatar_x, self.ai2_avatar_y, self.ai1_trails)
 
         # Determine the reward
-        reward = 0.01 if not game_over else -1
+        reward = 0.01
+        if game_over:
+            reward = -1
 
         # New state could be positions and directions of avatars
         new_state = (self.ai1_avatar_x, self.ai1_avatar_y, self.ai1_last_direction, 
@@ -92,33 +94,6 @@ class TronGame:
             pygame.draw.rect(self.game_display, (255, 165, 0), [trail[0], trail[1], self.avatar_size, self.avatar_size])
         
         pygame.display.update()
-
-    def update_ai_avatar(self, ai_x, ai_y, ai_speed, last_direction, trails):
-        directions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
-        if last_direction == 'UP':
-            directions.remove('DOWN')
-        elif last_direction == 'DOWN':
-            directions.remove('UP')
-        elif last_direction == 'LEFT':
-            directions.remove('RIGHT')
-        elif last_direction == 'RIGHT':
-            directions.remove('LEFT')
-
-        ai_avatar_direction = random.choice(directions)
-        last_direction = ai_avatar_direction
-
-        if ai_avatar_direction == 'UP':
-            ai_y -= ai_speed
-        elif ai_avatar_direction == 'DOWN':
-            ai_y += ai_speed
-        elif ai_avatar_direction == 'LEFT':
-            ai_x -= ai_speed
-        elif ai_avatar_direction == 'RIGHT':
-            ai_x += ai_speed
-
-        trails.append((ai_x, ai_y))
-
-        return ai_x, ai_y, last_direction, trails
 
     def is_collision(self, ai_x, ai_y, trails):
         for trail in trails:
@@ -159,6 +134,7 @@ class TronGame:
 
         # Return the updated position, direction, and trail
         return ai_x, ai_y, new_direction, trails
+    
     def draw_avatars(self):
         # Draw the avatars and trails
         self.game_display.fill((255, 255, 255))  # White background
