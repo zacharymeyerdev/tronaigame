@@ -1,6 +1,18 @@
 import pygame
 import random
 import config
+from dqn_agent import DQN
+import torch.optim as optim
+from collections import deque
+import torch
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+policy_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
+target_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
+target_net.load_state_dict(policy_net.state_dict())
+target_net.eval()
+optimizer = optim.Adam(policy_net.parameters(), lr=config.learning_rate)
+replay_memory = deque(maxlen=config.replay_memory_size)
 
 class TronGame:
     def __init__(self):
@@ -187,7 +199,10 @@ class TronGame:
             self.reset()
             print(f"Episode reward: {total_reward}")
 
+from dqn_agent import select_action, train_model
+
 # To play the game with DQN
 game = TronGame()
-# Initialize policy_net, target_net, optimizer, replay_memory, etc.
-game.play(policy_net, target_net, optimizer, replay_memory, epsilon_start, epsilon_decay, epsilon_min, batch_size, gamma)
+game.play(policy_net, target_net, optimizer, replay_memory, 
+          config.epsilon_start, config.epsilon_decay, 
+          config.epsilon_min, config.batch_size, config.gamma)
