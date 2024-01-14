@@ -1,7 +1,6 @@
 import pygame
 import random
 import config
-from dqn_agent import DQN
 import torch.optim as optim
 from collections import deque
 import torch
@@ -159,6 +158,7 @@ class TronGame:
         pygame.display.update()
 
     def play(self, policy_net, target_net, optimizer, replay_memory, epsilon_start, epsilon_decay, epsilon_min, batch_size, gamma):
+        from dqn_agent import select_action, train_model
         epsilon = epsilon_start
         replay = True
 
@@ -198,8 +198,6 @@ class TronGame:
             # Reset the game state for the next episode
             self.reset()
             print(f"Episode reward: {total_reward}")
-
-from dqn_agent import select_action, train_model
 
 # To play the game with DQN
 game = TronGame()
