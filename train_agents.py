@@ -9,11 +9,11 @@ from trongame import TronGame  # Your game environment
 import config
 from collections import deque
 import torch
-from dqn_agent import DQN, select_action, train_model  # Your DQN model
 # Define device for training (use GPU if available)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Initialize DQN components
+from dqn_agent import DQN, select_action, train_model  # Your DQN model
 policy_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
 target_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
 target_net.load_state_dict(policy_net.state_dict())
