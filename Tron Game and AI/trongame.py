@@ -210,7 +210,6 @@ class TronGame:
 
             # Reset the game state for the next episode
             self.reset()
-            print(f"Episode reward: {total_reward}")
 
 # To play the game with DQN
 game = TronGame()
