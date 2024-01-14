@@ -12,7 +12,7 @@ import torch.nn as nn
 class DQN(nn.Module):
     def __init__(self, state_size, hidden_layer_size, action_size):
         super(DQN, self).__init__()
-        self.fc1 = nn.Linear(state_size, hidden_layer_size)
+        self.fc1 = nn.Linear(state_size, hidden_layer_size)  # Adjusted state_size
         self.fc2 = nn.Linear(hidden_layer_size, action_size)
 
     def forward(self, x):
@@ -20,12 +20,14 @@ class DQN(nn.Module):
         x = self.fc2(x)
         return x
     
+# Correct Initialization of DQN models
 policy_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
 target_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
 target_net.load_state_dict(policy_net.state_dict())
-target_net.eval()
+target_net.eval()  # Set the target network to evaluation mode
 optimizer = optim.Adam(policy_net.parameters(), lr=config.learning_rate)
 replay_memory = deque(maxlen=config.replay_memory_size)
+
 
 class TronGame:
     def __init__(self):
@@ -33,7 +35,7 @@ class TronGame:
         self.width, self.height = 800, 600
         self.avatar_size = 10
         self.ai1_avatar_speed = 10
-        self.ai2_avatar_speed = 15
+        self.ai2_avatar_speed = 10
         self.clock = pygame.time.Clock()
         self.game_display = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption('Tron Clone')
@@ -45,18 +47,18 @@ class TronGame:
         self.ai1_avatar_y = self.height / 2
         self.ai2_avatar_x = self.width / 4
         self.ai2_avatar_y = self.height / 2
-        self.ai1_last_direction = 'UP'
-        self.ai2_last_direction = 'DOWN'
+        self.ai1_last_direction = ''
+        self.ai2_last_direction = ''
         self.ai1_trails = []
         self.ai2_trails = []
-        return # Return initial state
+        return (self.ai1_avatar_x, self.ai1_avatar_y, 
+            self.ai2_avatar_x, self.ai2_avatar_y)
 
     def step(self, action):
         # Assume action is a direction change for AI1
         # Update AI1
-        self.ai1_last_direction = action
         self.ai1_avatar_x, self.ai1_avatar_y, self.ai1_last_direction, self.ai1_trails = self.update_ai_avatar(
-            self.ai1_avatar_x, self.ai1_avatar_y, self.ai1_avatar_speed, self.ai1_last_direction, self.ai1_trails)
+            self.ai1_avatar_x, self.ai1_avatar_y, self.ai1_avatar_speed, action, self.ai1_trails)
 
         # Update AI2
         self.ai2_avatar_x, self.ai2_avatar_y, self.ai2_last_direction, self.ai2_trails = self.update_ai_avatar(
@@ -68,8 +70,8 @@ class TronGame:
                     self.is_collision(self.ai2_avatar_x, self.ai2_avatar_y, self.ai2_trails) or \
                     self.is_collision(self.ai2_avatar_x, self.ai2_avatar_y, self.ai1_trails)
 
-        # Determine reward (example: -1 for game over, 0 otherwise)
-        reward = -1 if game_over else 0
+        # Determine the reward
+        reward = 0.01 if not game_over else -1
 
         # New state could be positions and directions of avatars
         new_state = (self.ai1_avatar_x, self.ai1_avatar_y, self.ai1_last_direction, 
@@ -178,24 +180,33 @@ class TronGame:
         while replay:
             game_over = False
             state = self.reset()  # Get the initial state
+            if state is None:
+                raise ValueError("Received 'None' state from reset")
             total_reward = 0
 
             while not game_over:
+                # Nested function for selecting an action
+                def select_action(state, epsilon, policy_net):
+                    if state is None:
+                        raise ValueError("Received 'None' state in select_action")
+
+                    if random.random() > epsilon:
+                        with torch.no_grad():
+                            state_tensor = torch.tensor([state], dtype=torch.float, device=config.device)
+                            return policy_net(state_tensor).max(1)[1].view(1, 1).item()
+                    else:
+                        return random.randrange(config.action_size)
+
+                # Nested function for training the model
                 def train_model(policy_net, target_net, optimizer, experiences, gamma):
                     if len(experiences) < config.batch_size:
                         return
-                def select_action(state, epsilon, policy_net):
-                    if random.random() > epsilon:
-                        with torch.no_grad():
-                            state = torch.tensor([state], dtype=torch.float, device=config.device)
-                            return policy_net(state).max(1)[1].view(1, 1).item()
-                    else:
-                        return random.randrange(config.action_size)
+                    
                 action = select_action(state, epsilon, policy_net)  # DQN agent selects an action
                 next_state, reward, game_over = self.step(action)  # Apply action to the game
-                total_reward += reward
 
                 # Store the transition in replay memory
+                total_reward += reward
                 replay_memory.append((state, action, reward, next_state, game_over))
 
                 # Train the model if memory is sufficient
@@ -204,7 +215,10 @@ class TronGame:
                     train_model(policy_net, target_net, optimizer, experiences, gamma)
 
                 state = next_state  # Update the state
-
+                
+                if game_over:
+                    print(f"Game over at this step. Total reward: {total_reward}")
+            
                 # Update epsilon for the epsilon-greedy strategy
                 epsilon = max(epsilon_min, epsilon_decay * epsilon)
 
