@@ -18,7 +18,6 @@ class DQN(nn.Module):
         x = self.fc3(x)
         return x
     
-    @staticmethod
     def select_action(state, epsilon, policy_net):
         if random.random() > epsilon:
             with torch.no_grad():
@@ -27,7 +26,6 @@ class DQN(nn.Module):
         else:
             return random.randrange(config.action_size)
         
-    @staticmethod
     def train_model(policy_net, target_net, optimizer, experiences, gamma):
         if len(experiences) < config.batch_size:
             return

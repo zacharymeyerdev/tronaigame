@@ -6,6 +6,20 @@ from collections import deque
 import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+import torch
+import torch.nn as nn
+
+class DQN(nn.Module):
+    def __init__(self, state_size, hidden_layer_size, action_size):
+        super(DQN, self).__init__()
+        self.fc1 = nn.Linear(state_size, hidden_layer_size)
+        self.fc2 = nn.Linear(hidden_layer_size, action_size)
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+    
 policy_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
 target_net = DQN(config.state_size, config.hidden_layer_size, config.action_size).to(device)
 target_net.load_state_dict(policy_net.state_dict())
@@ -156,9 +170,8 @@ class TronGame:
             pygame.draw.rect(self.game_display, (255, 165, 0), [trail[0], trail[1], self.avatar_size, self.avatar_size])
 
         pygame.display.update()
-
+        
     def play(self, policy_net, target_net, optimizer, replay_memory, epsilon_start, epsilon_decay, epsilon_min, batch_size, gamma):
-        from dqn_agent import select_action, train_model
         epsilon = epsilon_start
         replay = True
 
@@ -168,6 +181,16 @@ class TronGame:
             total_reward = 0
 
             while not game_over:
+                def train_model(policy_net, target_net, optimizer, experiences, gamma):
+                    if len(experiences) < config.batch_size:
+                        return
+                def select_action(state, epsilon, policy_net):
+                    if random.random() > epsilon:
+                        with torch.no_grad():
+                            state = torch.tensor([state], dtype=torch.float, device=config.device)
+                            return policy_net(state).max(1)[1].view(1, 1).item()
+                    else:
+                        return random.randrange(config.action_size)
                 action = select_action(state, epsilon, policy_net)  # DQN agent selects an action
                 next_state, reward, game_over = self.step(action)  # Apply action to the game
                 total_reward += reward
