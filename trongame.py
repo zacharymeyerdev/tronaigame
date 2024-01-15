@@ -12,8 +12,10 @@ width, height = 1200, 800
 player_size = 10
 player1_pos = [width // 4, height // 2]
 player2_pos = [3 * width // 4, height // 2]
-player1_color = (0, 128, 255)  # Blue
+player1_color = (0, 0, 255)  # Blue
+player1_trail_color = (0, 128, 255)  # Dark Blue
 player2_color = (255, 100, 0)  # Orange
+player2_trail_color = (255, 200, 0)  # Dark Orange
 bg_color = (255, 255, 255)  # White
 player1_trail = []
 player2_trail = []
@@ -55,9 +57,9 @@ def update_ai():
 
 def draw_trails():
     for pos in player1_trail:
-        pygame.draw.rect(screen, player1_color, (pos[0], pos[1], player_size, player_size))
+        pygame.draw.rect(screen, player1_trail_color, (pos[0], pos[1], player_size, player_size))
     for pos in player2_trail:
-        pygame.draw.rect(screen, player2_color, (pos[0], pos[1], player_size, player_size))
+        pygame.draw.rect(screen, player2_trail_color, (pos[0], pos[1], player_size, player_size))
 
 def check_collisions_player1():
     # Check border collisions for player 1
@@ -222,10 +224,14 @@ def train_ai():
         print(f"Episode {episode + 1} completed")
 
 def play_game_with_agents(agent1, agent2):
-    reset_game()  # Reset the game to the initial state
+    global game_over
+    print("Playing game with agents")
+    reset_game()
+    game_over = False
     state1 = get_current_state_player1()  # Define this function based on player 1's perspective
     state2 = get_current_state_player2()  # Define this function based on player 2's perspective
-
+    draw_players()  # Draw the players at their updated positions
+    pygame.display.flip()
     while not game_over:
         # Draw the game state
 
@@ -268,8 +274,8 @@ def play_game_with_agents(agent1, agent2):
                 return
 
         # Check if the game is over
-        check_collisions_player1()
-        check_collisions_player2()
+        if check_collisions_player1() or check_collisions_player2():
+            break
 
         clock.tick(10)
 
@@ -285,6 +291,7 @@ def play_game_with_agents(agent1, agent2):
     
 # Game loop for training with two agents
 for episode in range(number_of_episodes):
+    print(f"Starting Episode {episode + 1}")
     play_game_with_agents(q_learning_agent1, q_learning_agent2)
     print(f"Episode {episode + 1} completed")
 
