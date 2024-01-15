@@ -6,6 +6,7 @@ import pygame.font
 
 # Initialize Pygame
 pygame.init()
+pygame.font.init()
 
 # Game Variables
 
@@ -86,12 +87,19 @@ def check_collisions_player2():
 
     return False
 
+def calculate_distance(pos1, pos2):
+    return ((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)**0.5
+
+def update_reward_for_proximity():
+    distance = calculate_distance(player1_pos, player2_pos)
+    proximity_reward = 1 / (distance + 1)  # Adding 1 to avoid division by zero
+    return proximity_reward
 
 def reset_game():
     # Reset the game state to its initial conditions
     global player1_pos, player2_pos, player1_trail, player2_trail, game_over
     player1_pos = [width // 4, height // 2]
-    player2_pos = [3 * width // 4, height // 2]
+    player2_pos = [2 * width // 4, height // 2]
     player1_trail = []
     player2_trail = []
     game_over = False
@@ -154,7 +162,8 @@ def perform_action_player1(action):
     # Apply action for player 1
     # Update player 1 position based on action
     # Update player 1 trail
-
+    proximity_reward = update_reward_for_proximity()
+    reward1 += proximity_reward  # Encourage moving closer
     # Check collisions for player 1
     game_over1 = check_collisions_player1()
 
@@ -174,7 +183,8 @@ def perform_action_player2(action):
     # Apply action for player 2
     # Update player 2 position based on action
     # Update player 2 trail
-
+    proximity_reward = update_reward_for_proximity()
+    reward2 += proximity_reward  # Encourage moving closer
     # Check collisions for player 2
     game_over2 = check_collisions_player2()
 
@@ -243,16 +253,21 @@ def train_ai():
             new_state2 = get_current_state_player2()
             update_positions_player2()  # Move player 2 based on action2
             q_learning_agent2.learn(state2, action2, reward2, new_state2)
-            state2 = new_state2
+        state2 = new_state2
+        # Check if the game is over for either agent
+        game_over = game_over1 or game_over2
+        if check_collisions_player1() or check_collisions_player2():
+            reward = -1
+    
+    # Save the Q-tables at specific intervals, for example, every 100 episodes
+    if episode % 100 == 0:
+        q_learning_agent1.save_q_table(f'q_table_agent1_episode_{episode}')
+        q_learning_agent2.save_q_table(f'q_table_agent2_episode_{episode}')
 
-            # Check if the game is over for either agent
-            game_over = game_over1 or game_over2
-            if check_collisions_player1() or check_collisions_player2():
-                reward = -1
-        
-        print(f"Episode {episode + 1} completed")
+    print(f"Episode {episode + 1} completed")
 
-def play_game_with_agents(agent1, agent2):
+
+def play_game_with_agents(agent1, agent2, episode_number):
     global game_over
     print("Playing game with agents")
     reset_game()
@@ -266,6 +281,11 @@ def play_game_with_agents(agent1, agent2):
 
         draw_trails()  # Draw the trails of both players
         draw_players()  # Draw the players at their updated positions
+        
+        # Display the episode number
+        episode_text = font.render(f'Episode: {episode_number}', True, (0, 0, 0))  # Black color for the text
+        screen.blit(episode_text, (width - 200, 20))  # Position the text
+
         pygame.display.flip()
 
         # Handle events to keep the window responsive
@@ -325,11 +345,13 @@ def play_game_with_agents(agent1, agent2):
 
 for episode in range(number_of_episodes):
     print(f"Starting Episode {episode + 1}")
-    play_game_with_agents(q_learning_agent1, q_learning_agent2)
+    play_game_with_agents(q_learning_agent1, q_learning_agent2, episode + 1)
     print(f"Episode {episode + 1} completed")
 
 # After training
 train_ai()  # Comment this out after training is done
-
+# Optionally, save the Q-tables at the end of training
+q_learning_agent1.save_q_table('final_q_table_agent1')
+q_learning_agent2.save_q_table('final_q_table_agent2')
 # To play the game
 #game_loop(training_mode=True)  # Uncomment this to play the game

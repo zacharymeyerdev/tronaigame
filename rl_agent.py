@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import os
 
 class QLearningAgent:
     def __init__(self, n_states, n_actions, learning_rate=0.1, discount_factor=0.95):
@@ -64,7 +65,17 @@ class QLearningAgent:
             print("Player avatar moves LEFT")
         elif action == 'RIGHT':
             print("Player avatar moves RIGHT")
+            
+    def save_q_table(self, filename):
+        np.save(filename, self.q_table)
+        print(f"Q-table saved to {filename}.npy")
 
+    def load_q_table(self, filename):
+        if os.path.exists(filename + '.npy'):
+            self.q_table = np.load(filename + '.npy')
+            print(f"Q-table loaded from {filename}.npy")
+        else:
+            print("File not found. Ensure the correct path and filename.")
 # Define the number of states and actions
 n_states = 100  # Adjust based on your game's state representation
 n_actions = 4   # UP, DOWN, LEFT, RIGHT
