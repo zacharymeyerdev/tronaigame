@@ -85,11 +85,11 @@ def check_collisions_player2():
 
 def reset_game():
     # Reset the game state to its initial conditions
-    global player_pos, enemy_pos, player_trail, enemy_trail, game_over
-    player_pos = [width//4, height//2]
-    enemy_pos = [3*width//4, height//2]
-    player_trail = []
-    enemy_trail = []
+    global player1_pos, player2_pos, player1_trail, player2_trail, game_over
+    player1_pos = [width // 4, height // 2]
+    player2_pos = [3 * width // 4, height // 2]
+    player1_trail = []
+    player2_trail = []
     game_over = False
     # Any other necessary resets
 
@@ -274,7 +274,10 @@ def play_game_with_agents(agent1, agent2):
 
         # Check if the game is over
         if check_collisions_player1() or check_collisions_player2():
-            break
+            reset_game()  # Restart the game
+            state1 = get_current_state_player1()
+            state2 = get_current_state_player2()
+            continue
 
         clock.tick(10)
 
