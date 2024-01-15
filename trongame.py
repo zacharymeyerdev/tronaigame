@@ -2,11 +2,15 @@ import pygame
 import sys
 import random
 from rl_agent import QLearningAgent
+import pygame.font
 
 # Initialize Pygame
 pygame.init()
 
 # Game Variables
+
+# Initialize the font object
+font = pygame.font.Font(None, 36)
 width, height = 1200, 800
 player_size = 10
 player1_pos = [width // 4, height // 2]
@@ -94,13 +98,13 @@ def reset_game():
     # Any other necessary resets
 
 def get_current_state_player1():
-    # Example state representation for player 1
-    state_player1 = 4
+    # Calculate the state representation for player 1
+    state_player1 = (player1_pos[0] // (width // 10)) + (player1_pos[1] // (height // 10)) * 10
     return state_player1
 
 def get_current_state_player2():
-    # Example state representation for player 2
-    state_player2 = 4
+    # Calculate the state representation for player 2
+    state_player2 = (player2_pos[0] // (width // 10)) + (player2_pos[1] // (height // 10)) * 10
     return state_player2
 
 def draw_players():
@@ -145,22 +149,42 @@ def update_positions_player2():
 
 def perform_action_player1(action):
     global player1_pos, player1_trail, game_over
+    reward1 = 0.1  # Initialize reward for player 1
+
     # Apply action for player 1
     # Update player 1 position based on action
     # Update player 1 trail
-    # Calculate reward for player 1
-    reward1 = 0.01
-    game_over1 = check_collisions_player1()  # Check collisions for player 1
+
+    # Check collisions for player 1
+    game_over1 = check_collisions_player1()
+
+    if game_over1:
+        reward1 -= 1  # Subtract 1 from reward for going into wall
+    elif player1_pos in player1_trail:
+        reward1 -= 1.5  # Subtract 1.5 from reward for going into own trail
+    elif player1_pos in player2_trail:
+        reward1 += 2  # Add 2 to reward for going into opponent's trail
+
     return reward1, game_over1
 
 def perform_action_player2(action):
     global player2_pos, player2_trail, game_over
+    reward2 = 0.1  # Initialize reward for player 2
+
     # Apply action for player 2
     # Update player 2 position based on action
     # Update player 2 trail
-    # Calculate reward for player 2
-    reward2 = 0.01
-    game_over2 = check_collisions_player2()  # Check collisions for player 2
+
+    # Check collisions for player 2
+    game_over2 = check_collisions_player2()
+
+    if game_over2:
+        reward2 -= 1  # Subtract 1 from reward for going into wall
+    elif player2_pos in player2_trail:
+        reward2 -= 1.5  # Subtract 1.5 from reward for going into own trail
+    elif player2_pos in player1_trail:
+        reward2 += 2  # Add 2 to reward for going into opponent's trail
+
     return reward2, game_over2
 
 def update_positions():
@@ -205,20 +229,26 @@ def train_ai():
         while not game_over:
             # Agent 1 chooses an action and learns from it
             action1 = q_learning_agent1.choose_action(state1)
+            update_ai()  # Update the AI's actions
             reward1, game_over1 = perform_action_player1(action1)
             new_state1 = get_current_state_player1()
+            update_positions_player1()  # Move player 1 based on action1
             q_learning_agent1.learn(state1, action1, reward1, new_state1)
             state1 = new_state1
 
             # Agent 2 chooses an action and learns from it
             action2 = q_learning_agent2.choose_action(state2)
+            update_ai()  # Update the AI's actions
             reward2, game_over2 = perform_action_player2(action2)
             new_state2 = get_current_state_player2()
+            update_positions_player2()  # Move player 2 based on action2
             q_learning_agent2.learn(state2, action2, reward2, new_state2)
             state2 = new_state2
 
             # Check if the game is over for either agent
             game_over = game_over1 or game_over2
+            if check_collisions_player1() or check_collisions_player2():
+                reward = -1
         
         print(f"Episode {episode + 1} completed")
 
@@ -246,6 +276,7 @@ def play_game_with_agents(agent1, agent2):
 
         # Agent 1's turn
         action1 = agent1.choose_action(state1)
+        update_ai()  # Update the AI's actions
         reward1 = perform_action_player1(action1)  # Define this function for player 1's actions
         new_state1 = get_current_state_player1()
         agent1.learn(state1, action1, reward1, new_state1)
@@ -253,6 +284,7 @@ def play_game_with_agents(agent1, agent2):
 
         # Agent 2's turn
         action2 = agent2.choose_action(state2)
+        update_ai()
         reward2 = perform_action_player2(action2)  # Define this function for player 2's actions
         new_state2 = get_current_state_player2()
         agent2.learn(state2, action2, reward2, new_state2)
@@ -290,8 +322,7 @@ def play_game_with_agents(agent1, agent2):
         state2 = get_current_state_player2()
 
     print("Game Over")
-    
-# Game loop for training with two agents
+
 for episode in range(number_of_episodes):
     print(f"Starting Episode {episode + 1}")
     play_game_with_agents(q_learning_agent1, q_learning_agent2)

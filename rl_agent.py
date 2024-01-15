@@ -14,7 +14,8 @@ class QLearningAgent:
         if random.uniform(0, 1) < 0.05:  # Exploration factor
             return random.choice(self.actions)
         else:
-            return self.actions[np.argmax(self.q_table[state])]
+            action_index = np.argmax(self.q_table[state])
+            return self.actions[action_index]
 
     def learn(self, state, action, reward, next_state):
         state = int(state)  # Convert state to integer
@@ -52,6 +53,17 @@ class QLearningAgent:
         print(f"State: {state}, Type: {type(state)}")
         print(f"Action Index: {action_index}, Type: {type(action_index)}")
         print(f"New Q-value: {new_q}, Type: {type(new_q)}")
+        print(f"Reward: {reward}, Type: {type(reward)}")
+
+        # Print the direction of the player avatar's movement
+        if action == 'UP':
+            print("Player avatar moves UP")
+        elif action == 'DOWN':
+            print("Player avatar moves DOWN")
+        elif action == 'LEFT':
+            print("Player avatar moves LEFT")
+        elif action == 'RIGHT':
+            print("Player avatar moves RIGHT")
 
 # Define the number of states and actions
 n_states = 100  # Adjust based on your game's state representation
