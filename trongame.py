@@ -99,7 +99,7 @@ def reset_game():
     # Reset the game state to its initial conditions
     global player1_pos, player2_pos, player1_trail, player2_trail, game_over
     player1_pos = [width // 4, height // 2]
-    player2_pos = [2 * width // 4, height // 2]
+    player2_pos = [3 * width // 4, height // 2]
     player1_trail = []
     player2_trail = []
     game_over = False
@@ -230,6 +230,7 @@ number_of_episodes = 1000
 def train_ai():
     global game_over
     for episode in range(number_of_episodes):
+        print("Starting Episode", episode + 1)
         reset_game()
 
         # Initial states for both agents
@@ -253,7 +254,7 @@ def train_ai():
             new_state2 = get_current_state_player2()
             update_positions_player2()  # Move player 2 based on action2
             q_learning_agent2.learn(state2, action2, reward2, new_state2)
-        state2 = new_state2
+            state2 = new_state2
         # Check if the game is over for either agent
         game_over = game_over1 or game_over2
         if check_collisions_player1() or check_collisions_player2():
@@ -269,7 +270,7 @@ def train_ai():
 
 def play_game_with_agents(agent1, agent2, episode_number):
     global game_over
-    print("Playing game with agents")
+    print("Starting Episode", episode + 1)
     reset_game()
     game_over = False
     state1 = get_current_state_player1()  # Define this function based on player 1's perspective
@@ -326,7 +327,7 @@ def play_game_with_agents(agent1, agent2, episode_number):
 
         # Check if the game is over
         if check_collisions_player1() or check_collisions_player2():
-            reset_game()  # Restart the game
+            game_over = True  # Restart the game
             state1 = get_current_state_player1()
             state2 = get_current_state_player2()
             continue
@@ -345,7 +346,7 @@ def play_game_with_agents(agent1, agent2, episode_number):
 
 for episode in range(number_of_episodes):
     print(f"Starting Episode {episode + 1}")
-    play_game_with_agents(q_learning_agent1, q_learning_agent2, episode + 1)
+    play_game_with_agents(q_learning_agent1, q_learning_agent2, episode_number=episode + 1)
     print(f"Episode {episode + 1} completed")
 
 # After training
