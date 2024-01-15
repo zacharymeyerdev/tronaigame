@@ -2,7 +2,6 @@ import pygame
 import sys
 import random
 from rl_agent import QLearningAgent
-import pygame
 
 # Initialize Pygame
 pygame.init()
