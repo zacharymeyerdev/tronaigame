@@ -11,15 +11,12 @@ class QLearningAgent:
         self.n_actions = n_actions
 
     def choose_action(self, state):
-        # Ensure the state is within the valid range
-        if state < 0 or state >= len(self.q_table):
-            print(f"Invalid state index: {state}")
-            # Handle the invalid state, e.g., clamp to the valid range
-            state = max(min(state, len(self.q_table) - 1), 0)
-
-        action_index = np.argmax(self.q_table[state])
-        return self.actions[action_index]
-
+        # Choose the best action from the Q-table with some exploration
+        if random.uniform(0, 1) < 0.05:  # Exploration factor
+            return random.choice(self.actions)
+        else:
+            action_index = np.argmax(self.q_table[state])
+            return self.actions[action_index]
 
     def learn(self, state, action, reward, next_state):
         state = int(state)  # Convert state to integer
@@ -68,7 +65,7 @@ class QLearningAgent:
             print("Player avatar moves LEFT")
         elif action == 'RIGHT':
             print("Player avatar moves RIGHT")
-
+            
     def save_q_table(self, filename):
         np.save(filename, self.q_table)
         print(f"Q-table saved to {filename}.npy")
