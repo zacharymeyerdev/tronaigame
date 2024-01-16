@@ -26,6 +26,8 @@ player2_trail = []
 player1_direction = 'RIGHT'
 player2_direction = 'LEFT'
 speed = 10
+player1_previous_direction = None
+player2_previous_direction = None
 
 # Instantiate two QLearningAgents
 n_states = 100  # Adjust based on your game's state representation
@@ -52,9 +54,9 @@ def choose_ai_action():
     return random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT'])
 
 def update_ai():
-    global player1_direction, player2_direction
-    action1 = q_learning_agent1.choose_action(get_current_state_player1())
-    action2 = q_learning_agent2.choose_action(get_current_state_player2())
+    global player1_direction, player2_direction, player1_previous_direction, player2_previous_direction
+    action1 = q_learning_agent1.choose_action(get_current_state_player1(), player1_previous_direction)
+    action2 = q_learning_agent2.choose_action(get_current_state_player2(), player2_previous_direction)
     player1_direction = action1
     player2_direction = action2
     pygame.display.update()
@@ -119,43 +121,46 @@ def draw_players():
     pygame.draw.rect(screen, player1_color, (player1_pos[0], player1_pos[1], player_size, player_size))
     pygame.draw.rect(screen, player2_color, (player2_pos[0], player2_pos[1], player_size, player_size))
 
-
 def update_positions_player1():
-    global player1_pos, player1_trail, player1_direction
+    global player1_pos, player1_trail, player1_previous_direction, player1_direction
+
+    # Update the previous direction
+    player1_previous_direction = player1_direction
 
     # Update Player 1 Position
-    if player1_direction == 'UP' and player1_direction != 'DOWN':
+    if player1_direction == 'UP':
         player1_pos[1] -= speed
-    elif player1_direction == 'DOWN' and player1_direction != 'UP':
+    elif player1_direction == 'DOWN':
         player1_pos[1] += speed
-    elif player1_direction == 'LEFT' and player1_direction != 'RIGHT':
+    elif player1_direction == 'LEFT':
         player1_pos[0] -= speed
-    elif player1_direction == 'RIGHT' and player1_direction != 'LEFT':
+    elif player1_direction == 'RIGHT':
         player1_pos[0] += speed
 
     # Add the current position to Player 1's trail
     player1_trail.append(list(player1_pos))
-
     pygame.display.update()
 
-
 def update_positions_player2():
-    global player2_pos, player2_trail, player2_direction
+    global player2_pos, player2_trail, player2_previous_direction, player2_direction
+
+    # Update the previous direction
+    player2_previous_direction = player2_direction
 
     # Update Player 2 Position
-    if player2_direction == 'UP' and player2_direction != 'DOWN':
+    if player2_direction == 'UP':
         player2_pos[1] -= speed
-    elif player2_direction == 'DOWN' and player2_direction != 'UP':
+    elif player2_direction == 'DOWN':
         player2_pos[1] += speed
-    elif player2_direction == 'LEFT' and player2_direction != 'RIGHT':
+    elif player2_direction == 'LEFT':
         player2_pos[0] -= speed
-    elif player2_direction == 'RIGHT' and player2_direction != 'LEFT':
+    elif player2_direction == 'RIGHT':
         player2_pos[0] += speed
 
     # Add the current position to Player 2's trail
     player2_trail.append(list(player2_pos))
-
     pygame.display.update()
+
 
 def perform_action_player1(action):
     global player1_pos, player1_trail, game_over
@@ -297,7 +302,7 @@ def play_game_with_agents(agent1, agent2, episode_number):
                 return
 
         # Agent 1's turn
-        action1 = agent1.choose_action(state1)
+        action1 = agent1.choose_action(state1, player1_previous_direction)
         update_ai()  # Update the AI's actions
         reward1 = perform_action_player1(action1)  # Define this function for player 1's actions
         new_state1 = get_current_state_player1()
@@ -305,7 +310,7 @@ def play_game_with_agents(agent1, agent2, episode_number):
         state1 = new_state1
 
         # Agent 2's turn
-        action2 = agent2.choose_action(state2)
+        action2 = agent2.choose_action(state2, player2_previous_direction)
         update_ai()
         reward2 = perform_action_player2(action2)  # Define this function for player 2's actions
         new_state2 = get_current_state_player2()

@@ -10,14 +10,32 @@ class QLearningAgent:
         self.actions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
         self.n_actions = n_actions
 
-    def choose_action(self, state):
+    def choose_action(self, state, previous_direction):
         print("State:", state, "Type:", type(state))
-        # Choose the best action from the Q-table with some exploration
+        
+        # Define opposite directions
+        opposite_directions = {'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT', 'RIGHT': 'LEFT'}
+
+        # If no previous direction, proceed with original action selection process
+        if previous_direction is None:
+            if random.uniform(0, 1) < 0.05:  # Exploration factor
+                return random.choice(self.actions)
+            else:
+                action_index = np.argmax(self.q_table[state])
+                return self.actions[action_index]
+
+        # If there is a previous direction, avoid choosing the opposite direction
         if random.uniform(0, 1) < 0.05:  # Exploration factor
-            return random.choice(self.actions)
+            action = random.choice(self.actions)
+            while action == opposite_directions[previous_direction]:
+                action = random.choice(self.actions)
+            return action
         else:
-            action_index = np.argmax(self.q_table[state])
-            return self.actions[action_index]
+            action_indices = np.argsort(self.q_table[state])[::-1]
+            for action_index in action_indices:
+                action = self.actions[action_index]
+                if action != opposite_directions[previous_direction]:
+                    return action
 
     def learn(self, state, action, reward, next_state):
         state = int(state)  # Convert state to integer
