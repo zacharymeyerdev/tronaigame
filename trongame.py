@@ -349,7 +349,9 @@ for episode in range(number_of_episodes):
     print(f"Episode {episode + 1} completed")
 
 # After training
+print("beans1")
 train_ai()  # Comment this out after training is done
+print("beans2")
 # Optionally, save the Q-tables at the end of training
 q_learning_agent1.save_q_table('final_q_table_agent1')
 q_learning_agent2.save_q_table('final_q_table_agent2')
