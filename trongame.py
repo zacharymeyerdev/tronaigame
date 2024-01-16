@@ -25,7 +25,7 @@ player1_trail = []
 player2_trail = []
 player1_direction = 'RIGHT'
 player2_direction = 'LEFT'
-speed = 15
+speed = 10
 
 # Instantiate two QLearningAgents
 n_states = 100  # Adjust based on your game's state representation
@@ -266,7 +266,6 @@ def train_ai():
         q_learning_agent2.save_q_table(f'q_table_agent2_episode_{episode}')
 
     print(f"Episode {episode + 1} completed")
-
 
 def play_game_with_agents(agent1, agent2, episode_number):
     global game_over
