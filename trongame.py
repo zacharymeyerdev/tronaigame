@@ -121,39 +121,41 @@ def draw_players():
 
 
 def update_positions_player1():
-    global player1_pos, player1_trail
+    global player1_pos, player1_trail, player1_direction
 
     # Update Player 1 Position
-    if player1_direction == 'UP':
+    if player1_direction == 'UP' and player1_direction != 'DOWN':
         player1_pos[1] -= speed
-    elif player1_direction == 'DOWN':
+    elif player1_direction == 'DOWN' and player1_direction != 'UP':
         player1_pos[1] += speed
-    elif player1_direction == 'LEFT':
+    elif player1_direction == 'LEFT' and player1_direction != 'RIGHT':
         player1_pos[0] -= speed
-    elif player1_direction == 'RIGHT':
+    elif player1_direction == 'RIGHT' and player1_direction != 'LEFT':
         player1_pos[0] += speed
 
     # Add the current position to Player 1's trail
     player1_trail.append(list(player1_pos))
+
     pygame.display.update()
 
+
 def update_positions_player2():
-    global player2_pos, player2_trail
+    global player2_pos, player2_trail, player2_direction
 
     # Update Player 2 Position
-    if player2_direction == 'UP':
+    if player2_direction == 'UP' and player2_direction != 'DOWN':
         player2_pos[1] -= speed
-    elif player2_direction == 'DOWN':
+    elif player2_direction == 'DOWN' and player2_direction != 'UP':
         player2_pos[1] += speed
-    elif player2_direction == 'LEFT':
+    elif player2_direction == 'LEFT' and player2_direction != 'RIGHT':
         player2_pos[0] -= speed
-    elif player2_direction == 'RIGHT':
+    elif player2_direction == 'RIGHT' and player2_direction != 'LEFT':
         player2_pos[0] += speed
 
     # Add the current position to Player 2's trail
     player2_trail.append(list(player2_pos))
-    pygame.display.update()
 
+    pygame.display.update()
 
 def perform_action_player1(action):
     global player1_pos, player1_trail, game_over
@@ -244,7 +246,7 @@ def train_ai():
             reward1, game_over1 = perform_action_player1(action1)
             new_state1 = get_current_state_player1()
             update_positions_player1()  # Move player 1 based on action1
-            q_learning_agent1.learn(state1, action1, reward1, new_state1)
+            draw_players()  # Draw the updated positions of players
             state1 = new_state1
 
             # Agent 2 chooses an action and learns from it
@@ -253,7 +255,7 @@ def train_ai():
             reward2, game_over2 = perform_action_player2(action2)
             new_state2 = get_current_state_player2()
             update_positions_player2()  # Move player 2 based on action2
-            q_learning_agent2.learn(state2, action2, reward2, new_state2)
+            draw_players()  # Draw the updated positions of players
             state2 = new_state2
         # Check if the game is over for either agent
         game_over = game_over1 or game_over2
@@ -269,7 +271,7 @@ def train_ai():
 
 def play_game_with_agents(agent1, agent2, episode_number):
     global game_over
-    print("Starting Episode", episode + 1)
+    print("Starting Episode", episode_number)
     reset_game()
     game_over = False
     state1 = get_current_state_player1()  # Define this function based on player 1's perspective
@@ -341,17 +343,20 @@ def play_game_with_agents(agent1, agent2, episode_number):
         state1 = get_current_state_player1()
         state2 = get_current_state_player2()
 
+        if episode_number % 100 == 0:
+            q_learning_agent1.save_q_table(f'q_table_agent1_episode_{episode_number}')
+            q_learning_agent2.save_q_table(f'q_table_agent2_episode_{episode_number}')
+
     print("Game Over")
 
 for episode in range(number_of_episodes):
-    print(f"Starting Episode {episode + 1}")
     play_game_with_agents(q_learning_agent1, q_learning_agent2, episode_number=episode + 1)
     print(f"Episode {episode + 1} completed")
 
 # After training
-print("beans1")
-train_ai()  # Comment this out after training is done
-print("beans2")
+#print("beans1")
+#train_ai()  # Comment this out after training is done
+#print("beans2")
 # Optionally, save the Q-tables at the end of training
 q_learning_agent1.save_q_table('final_q_table_agent1')
 q_learning_agent2.save_q_table('final_q_table_agent2')

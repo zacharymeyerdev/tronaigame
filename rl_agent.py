@@ -11,6 +11,7 @@ class QLearningAgent:
         self.n_actions = n_actions
 
     def choose_action(self, state):
+        print("State:", state, "Type:", type(state))
         # Choose the best action from the Q-table with some exploration
         if random.uniform(0, 1) < 0.05:  # Exploration factor
             return random.choice(self.actions)
