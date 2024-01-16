@@ -42,13 +42,6 @@ pygame.display.set_caption("Tron Game")
 clock = pygame.time.Clock()
 pygame.display.flip()
 
-def play_step(action):
-    global game_over
-    # Apply the action to the game and return the reward and game_over status
-    reward = 0.01
-    game_over = -1
-    return reward, game_over
-
 def choose_ai_action():
     # Random action selector for the enemy
     return random.choice(['UP', 'DOWN', 'LEFT', 'RIGHT'])
@@ -233,47 +226,6 @@ def update_positions():
     
 # Assuming number_of_episodes is defined
 number_of_episodes = 1000
-
-def train_ai():
-    global game_over
-    for episode in range(number_of_episodes):
-        print("Starting Episode", episode + 1)
-        reset_game()
-
-        # Initial states for both agents
-        state1 = get_current_state_player1()
-        state2 = get_current_state_player2()
-
-        while not game_over:
-            # Agent 1 chooses an action and learns from it
-            action1 = q_learning_agent1.choose_action(state1)
-            update_ai()  # Update the AI's actions
-            reward1, game_over1 = perform_action_player1(action1)
-            new_state1 = get_current_state_player1()
-            update_positions_player1()  # Move player 1 based on action1
-            draw_players()  # Draw the updated positions of players
-            state1 = new_state1
-
-            # Agent 2 chooses an action and learns from it
-            action2 = q_learning_agent2.choose_action(state2)
-            update_ai()  # Update the AI's actions
-            reward2, game_over2 = perform_action_player2(action2)
-            new_state2 = get_current_state_player2()
-            update_positions_player2()  # Move player 2 based on action2
-            draw_players()  # Draw the updated positions of players
-            state2 = new_state2
-        # Check if the game is over for either agent
-        game_over = game_over1 or game_over2
-        if check_collisions_player1() or check_collisions_player2():
-            reward = -1
-    
-    # Save the Q-tables at specific intervals, for example, every 100 episodes
-    if episode % 100 == 0:
-        q_learning_agent1.save_q_table(f'q_table_agent1_episode_{episode}')
-        q_learning_agent2.save_q_table(f'q_table_agent2_episode_{episode}')
-
-    print(f"Episode {episode + 1} completed")
-
 def play_game_with_agents(agent1, agent2, episode_number):
     global game_over
     print("Starting Episode", episode_number)
@@ -354,16 +306,18 @@ def play_game_with_agents(agent1, agent2, episode_number):
 
     print("Game Over")
 
-for episode in range(number_of_episodes):
-    play_game_with_agents(q_learning_agent1, q_learning_agent2, episode_number=episode + 1)
-    print(f"Episode {episode + 1} completed")
+for _ in range(10):
+    for episode in range(number_of_episodes):
+        play_game_with_agents(q_learning_agent1, q_learning_agent2, episode_number=episode + 1)
+        print(f"Episode {episode + 1} completed")
+    
+    q_learning_agent1.save_q_table('final_q_table_agent1')
+    q_learning_agent2.save_q_table('final_q_table_agent2')
 
 # After training
 #print("beans1")
 #train_ai()  # Comment this out after training is done
 #print("beans2")
 # Optionally, save the Q-tables at the end of training
-q_learning_agent1.save_q_table('final_q_table_agent1')
-q_learning_agent2.save_q_table('final_q_table_agent2')
 # To play the game
 #game_loop(training_mode=True)  # Uncomment this to play the game
