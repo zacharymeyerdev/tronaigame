@@ -307,6 +307,8 @@ def play_game_with_agents(agent1, agent2, episode_number):
     print("Game Over")
 
 for _ in range(100):
+    q_learning_agent1.load_q_table('final_q_table_agent1')
+    q_learning_agent2.load_q_table('final_q_table_agent2')
     for episode in range(number_of_episodes):
         play_game_with_agents(q_learning_agent1, q_learning_agent2, episode_number=episode + 1)
         print(f"Episode {episode + 1} completed")

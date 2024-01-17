@@ -58,7 +58,7 @@ class QLearningAgent:
         # Calculate new Q value
         new_q = (1 - self.learning_rate) * current_q + self.learning_rate * (reward + self.discount_factor * max_future_q)
 
-            # Update Q-table
+        # Update Q-table
         self.q_table[state, action_index] = new_q
         # Retrieve maximum Q value for next state
 
