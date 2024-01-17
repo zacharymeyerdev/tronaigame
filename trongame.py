@@ -87,9 +87,22 @@ def calculate_distance(pos1, pos2):
 
 def update_reward_for_proximity():
     distance = calculate_distance(player1_pos, player2_pos)
-    proximity_reward = 1 / (distance + 1)  # Adding 1 to avoid division by zero
-    proximity_reward *= 2  # Increase the proximity reward
-    return proximity_reward
+    if distance < 500:
+        proximity_reward = 1 / (distance + 1)  # Adding 1 to avoid division by zero
+        proximity_reward *= 100  # Increase the proximity reward
+        return proximity_reward
+    else:
+        return 0  # No reward if distance is 500 or more
+
+def update_reward_for_distance():
+    distance = calculate_distance(player1_pos, player2_pos)
+    if distance > 500:
+        distance_reward = 1 / (distance + 1)  # Adding 1 to avoid division by zero
+        distance_reward *= -200  # Increase the proximity penalty
+        return distance_reward
+    else:
+        return 0  # No penalty if distance is 500 or less
+
 
 def reset_game():
     # Reset the game state to its initial conditions
@@ -164,6 +177,7 @@ def perform_action_player1(action):
     # Update player 1 position based on action
     # Update player 1 trail
     proximity_reward = update_reward_for_proximity()
+    update_reward_for_distance()
     reward1 += proximity_reward  # Encourage moving closer
     # Check collisions for player 1
     game_over1 = check_collisions_player1()
