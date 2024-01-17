@@ -1,3 +1,8 @@
+# To Do List:
+# edit rewards system
+# train a lot more
+# edit distance over time?
+
 import pygame
 import sys
 import random
