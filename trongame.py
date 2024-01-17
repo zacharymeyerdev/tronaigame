@@ -177,8 +177,9 @@ def perform_action_player1(action):
     # Update player 1 position based on action
     # Update player 1 trail
     proximity_reward = update_reward_for_proximity()
-    update_reward_for_distance()
+    distance_reward = update_reward_for_distance()
     reward1 += proximity_reward  # Encourage moving closer
+    reward1 += distance_reward
     # Check collisions for player 1
     game_over1 = check_collisions_player1()
 
@@ -187,7 +188,7 @@ def perform_action_player1(action):
     elif player1_pos in player1_trail:
         reward1 -= 1.5  # Subtract 1.5 from reward for going into own trail
     elif player1_pos in player2_trail:
-        reward1 += 2  # Add 2 to reward for going into opponent's trail
+        reward1 -= 0.5  # Add 2 to reward for going into opponent's trail
 
     return reward1, game_over1
 
@@ -199,7 +200,9 @@ def perform_action_player2(action):
     # Update player 2 position based on action
     # Update player 2 trail
     proximity_reward = update_reward_for_proximity()
+    distance_reward = update_reward_for_distance()
     reward2 += proximity_reward  # Encourage moving closer
+    reward2 += distance_reward
     # Check collisions for player 2
     game_over2 = check_collisions_player2()
 
@@ -208,7 +211,7 @@ def perform_action_player2(action):
     elif player2_pos in player2_trail:
         reward2 -= 1.5  # Subtract 1.5 from reward for going into own trail
     elif player2_pos in player1_trail:
-        reward2 += 2  # Add 2 to reward for going into opponent's trail
+        reward2 -=0.5  # Add 2 to reward for going into opponent's trail
 
     return reward2, game_over2
 
