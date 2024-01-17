@@ -88,6 +88,7 @@ def calculate_distance(pos1, pos2):
 def update_reward_for_proximity():
     distance = calculate_distance(player1_pos, player2_pos)
     proximity_reward = 1 / (distance + 1)  # Adding 1 to avoid division by zero
+    proximity_reward *= 2  # Increase the proximity reward
     return proximity_reward
 
 def reset_game():
